@@ -14,6 +14,10 @@ public class Reflection {
 				list.add(f);
 			}
 		}
+		Class<?> cl;
+		while((cl = c.getSuperclass()) != Object.class) {
+			list.addAll(listAllNonStaticField(cl));
+		}
 		return list;
 	}
 	

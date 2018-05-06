@@ -63,7 +63,7 @@ public class Serializer {
 	
 	public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException {
 		Serializer serializer = new Serializer();
-		StringBuilder build = serializer.serialize0(new Test());
+		StringBuilder build = serializer.serialize0(new StringBuilder());
 		System.out.println(build.toString());
 //		System.out.println(new Integer(5));
 //		String s = "{java.io.Test:[$i-5,$b:1]}";
