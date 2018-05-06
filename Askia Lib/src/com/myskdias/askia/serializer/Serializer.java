@@ -1,8 +1,12 @@
 package com.myskdias.askia.serializer;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Vector;
+
+import com.myskdias.askia.utils.ArrayUtils;
 
 public class Serializer {
 	
@@ -38,18 +42,39 @@ public class Serializer {
 			}
 		}
 		StringBuilder builder = serializeName(c);
-		ArrayList<Field> toSerialize = reflection.listAllNonStaticField(c);
-		System.out.println(toSerialize);
-		int size = toSerialize.size();
-		for(int i = 0; i < size; i++) {
-			Object object = toSerialize.get(i).get(obj);
-			if(object != null)
-				builder.append(serialize0(object));
-			else builder.append("null");
-			if(i != size - 1)
-				builder.append(",");
+		if(c.isArray()) {
+			builder.append("[");
+			int dim = ArrayUtils.getNumberOfDimensions(obj);
+			int length = ArrayUtils.getLength(obj);
+				for(int i = 0; i < length; i++) {
+					Object val = ArrayUtils.get(obj, i);
+					if(val == null) {
+						builder.append("null");
+					} else {
+						builder.append(serialize0(val));
+					}
+					if(i != length -1) {
+						builder.append(",");
+					}
+				}
+				builder.append("]");
+			
+		} else {
+			ArrayList<Field> toSerialize = reflection.listAllNonStaticField(c);
+			int size = toSerialize.size();
+			for(int i = 0; i < size; i++) {
+				Field f = toSerialize.get(i);
+				f.setAccessible(true);
+				Object object = f.get(obj);
+				if(object != null)
+					builder.append(serialize0(object));
+				else builder.append("null");
+				if(i != size - 1)
+					builder.append(",");
+			}
 		}
-		builder.append("]}");
+		
+		builder.append(")}");
 		return builder;
 	}
 	
@@ -57,13 +82,18 @@ public class Serializer {
 		StringBuilder stringBuilder = new StringBuilder();
 		stringBuilder.append("{");
 		stringBuilder.append(c.getCanonicalName());
-		stringBuilder.append(":[");
+		stringBuilder.append(":(");
 		return stringBuilder;
 	}
 	
 	public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException {
 		Serializer serializer = new Serializer();
-		StringBuilder build = serializer.serialize0(new StringBuilder());
+		ArrayList<Object> z = new ArrayList<>();
+		z.add("Salut");
+		z.add(new Vector<>());
+		z.add(45);
+		z.add(new BigDecimal(45));
+		StringBuilder build = serializer.serialize0(z);
 		System.out.println(build.toString());
 //		System.out.println(new Integer(5));
 //		String s = "{java.io.Test:[$i-5,$b:1]}";
