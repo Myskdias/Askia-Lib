@@ -20,12 +20,6 @@ public class ArrayUtils {
 	private static final Map<Class<?>, Class<?>> PRIM;
 	private static final Map<Class<?>, Class<?>> PRIM1;
 	
-	public static final int AS_ARRAY_EMPTY = 0;
-	public static final int AS_ARRAY_DEFAULT = 1;
-	public static final int AS_SYSTEM_METHOD = 7;
-	public static final int AS_ARRAYUTILS_METHOD = 9;
-	public static final int AS_REMOVE_ILLEGAL_VALUE = 11;
-	
 	static {
 		PRIM = new HashMap<>();
 		PRIM.put(Integer.class, int.class);
@@ -45,10 +39,6 @@ public class ArrayUtils {
 		PRIM.put(byte.class, Byte.class);
 		PRIM.put(boolean.class, Boolean.class);
 		PRIM.put(char.class, Character.class);
-	}
-	
-	private static boolean isArgs(int i, int i2) {
-		return i == i2;
 	}
 	
 	public static Class<?> getArrayType(Class<?> componentType, int dimensions) throws ClassNotFoundException {
@@ -128,15 +118,12 @@ public class ArrayUtils {
 	}
 	
 	public static Class<?> swapFromPrimitive(Class<?> other) {
-		if(other == null) System.out.println("kk");
+		if(other == null) System.out.println("Arg can't be null");
 		if(!isPrimitiveArray(other)) {
-			System.out.println("primArray");
 			return PRIM.get(getBaseClass(other));
 		}
-		System.out.println("rml");
 		System.out.println(getBaseClass(other).getCanonicalName());
 		if(!PRIM1.containsKey(other)) {
-			System.out.println("noKey");
 		}
 		return PRIM1.get(getBaseClass(other));
 	}
@@ -215,139 +202,6 @@ public class ArrayUtils {
 
 	public static void setDouble(Object array, int index, double value) {
 		Array.setDouble(array, index, value);
-	}
-	
-	
-	
-	public static void fill(Object array, int methodType, Object... values) {
-		if (!isArray(array))
-			return;
-		int limit = 0;
-		if (values.length < getLength(array)) {
-			limit = getLength(values);
-		} else {
-			limit = getLength(array);
-		}
-		limit--;
-		boolean b = isArgs(methodType, AS_ARRAYUTILS_METHOD | AS_REMOVE_ILLEGAL_VALUE); 
-		if (isArgs(AS_SYSTEM_METHOD, methodType)) {
-			System.arraycopy(array, 0, values, 0, limit);
-		} else if (isArgs(AS_ARRAYUTILS_METHOD, methodType) || b) {
-			if (isPrimitiveArray(array)) {
-				if (isPrimitiveArray(values)) {
-					fill(array, AS_SYSTEM_METHOD, values);
-					return;
-				} else {
-					for(int index = 0; index < limit; index++) {
-						Object value = values[index];
-						index++;
-						Class<?> valueClass = value.getClass();
-						if(isArray(valueClass)) {
-							if(getNumberOfDimensions(array) -1 == getNumberOfDimensions(valueClass)) {
-								if(!isPrimitiveArray(valueClass)) {
-									fill(get(array, index), methodType, value);
-								} else {
-									fill(get(array, index), AS_SYSTEM_METHOD, value);
-								}
-							} else {
-								if(!b) {
-									throw new ClassCastException("Impossible to cast "+valueClass.getCanonicalName()+" to "+getBaseClass(array).getCanonicalName());
-								}
-							}
-						} else if(isArray(get(array, index))) {
-							if(!b) {
-								throw new ClassCastException("Impossible to cast "+valueClass.getCanonicalName()+" to "+getBaseClass(array).getCanonicalName());
-							}
-							continue;
-						}
-						
-						if (valueClass == byte.class) {
-							set(array, index, new Byte((byte)value));
-							continue;
-						} else if (valueClass == short.class) {
-							set(array, index, new Short((short)value));
-							continue;
-						} else if (valueClass == int.class) {
-							set(array, index, new Integer((int)value));
-							continue;
-						} else if (valueClass == long.class) {
-							set(array, index, new Long((long)value));
-							continue;
-						} else if (valueClass == char.class) {
-							set(array, index, new Character((char)value));
-							continue;
-						} else if (valueClass == float.class) {
-							set(array, index, new Float((float)value));
-							continue;
-						} else if (valueClass == double.class) {
-							set(array, index, new Double((double)value));
-							continue;
-						} else if (valueClass == boolean.class) {
-							set(array, index, new Boolean((boolean)value));
-							continue;
-						} else {
-							if(!b) {
-								throw new ClassCastException("Impossible to cast "+valueClass.getCanonicalName()+" to "+getBaseClass(array).getCanonicalName());
-							}
-							continue;
-						}
-					}
-
-				}
-			} else {
-				for(int index = 0; index < limit; index++) {
-					Object value = values[index];
-					Class<?> valueClass = value.getClass();
-					index++;
-					if(getBaseClass(array).isInstance(value)) {
-						set(array, index, value);
-					} else {
-						if(!b) {
-							throw new ClassCastException("Impossible to cast "+valueClass.getCanonicalName()+" to "+getBaseClass(array).getCanonicalName());
-						}
-					}
-				}
-			}
-		} else {
-			throw new IllegalArgumentException("Invalid method for fill (arg2 ->  methodType)");
-		}
-
-	}
-	
-	public static Object[] fromPrimitiveType(Object array) {
-		if(!isArray(array)) return null;
-		if(!isPrimitiveArray(array)) return (Object[]) array;
-		try {
-			Class<?> equivalent = getArrayType(swapFromPrimitive(array.getClass()), getNumberOfDimensions(array));
-			Object newArray = createArray(equivalent, getLength(array));
-			fill(newArray, AS_ARRAYUTILS_METHOD | AS_REMOVE_ILLEGAL_VALUE, array);
-			return (Object[]) newArray;
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	public static Object toPrimitiveType(Object[] array) {
-		if(isPrimitiveArray(array)) return array;
-		if(array == null) {
-			System.out.println("rr");
-		}
-		try {
-			Class<?> swap = swapFromPrimitive(array.getClass());
-			if(swap == null) {
-				System.out.println("rre");
-			}
-			Class<?> equivalent = getArrayType(swap, getNumberOfDimensions(array));
-			System.out.println(equivalent.getCanonicalName()+" i");
-			Object newArray = createArray(equivalent, getLength(array));
-			System.out.println(newArray.getClass().getCanonicalName()+" m");
-			fill(newArray, AS_ARRAYUTILS_METHOD | AS_REMOVE_ILLEGAL_VALUE, array);
-			return newArray;
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-		return null;
 	}
 	
 	public static Object fromString(String array, Class<?> classType) {
@@ -466,6 +320,135 @@ public class ArrayUtils {
 				}
 			}
 		}
+	}
+	
+	public static Object fromPrimitiveArray(Object array) {
+		if(!isPrimitiveArray(array)) return  array;
+		if(array == null) {
+			System.out.println("Array can't be null");
+		}
+		try {
+			Class<?> swap = swapFromPrimitive(array.getClass());
+			if(swap == null) {
+				System.out.println("The class "+array.getClass().getCanonicalName()+" don't have any equivalent in primitive classes !");
+			}
+			Class<?> equivalent = getArrayType(swap, getNumberOfDimensions(array));
+			Object newArray = createArray(equivalent, getLength(array));
+			newArray = fill(newArray, array);
+			return newArray;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static Object toPrimitiveArray(Object array) {
+		if(isPrimitiveArray(array)) return array;
+		if(array == null) {
+			System.out.println("Array can't be null");
+		}
+		try {
+			Class<?> swap = swapFromPrimitive(array.getClass());
+			if(swap == null) {
+				System.out.println("The class "+array.getClass().getCanonicalName()+" don't have any equivalent in primitive classes !");
+			}
+			Class<?> equivalent = getArrayType(swap, getNumberOfDimensions(array));
+			Object newArray = createArray(equivalent, getLength(array));
+			newArray = fill(newArray, array);
+			return newArray;
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static Object fill(Object array, Object lastArray) {
+		int length = getLength(lastArray);
+		int dim = getNumberOfDimensions(lastArray);
+		if(dim == 1) {
+			for(int i = 0; i < length; i++) {
+				Object value = get(lastArray, i);
+				Object newValue = swapValue(value);
+				if(newValue != null) 
+					set(array, i, newValue);
+			}
+		} else {
+			for(int i = 0; i < length; i++) {
+				Object value = get(lastArray, i);
+				Object na = swapTypeArray(value);
+				if(na != null) {
+					set(array, i, na);
+				}
+					
+			}
+		}
+		
+		return array;
+	}
+	
+	public static Object swapValue(Object value) {
+		if(value == null) return null;
+		Class<?> valueClass = value.getClass();
+		if(valueClass.isPrimitive()) {
+			if (valueClass == byte.class) {
+				return new Byte((byte)value);
+			} else if (valueClass == short.class) {
+				return new Short((short)value);
+			} else if (valueClass == int.class) {
+				return new Integer((int)value);
+			} else if (valueClass == long.class) {
+				return new Long((long)value);
+			} else if (valueClass == char.class) {
+				return new Character((char)value);
+			} else if (valueClass == float.class) {
+				return new Float((float)value);
+			} else if (valueClass == double.class) {
+				return new Double((double)value);
+			} else if (valueClass == boolean.class) {
+				return new Boolean((boolean)value);
+			} else {
+				return null;
+			}
+		} else {
+			if (valueClass == Byte.class) {
+				return ((Byte)value).byteValue();
+			} else if (valueClass == Short.class) {
+				return ((Short)value).shortValue();
+			} else if (valueClass == Integer.class) {
+				return ((Integer)value).intValue();
+			} else if (valueClass == Long.class) {
+				return ((Long)value).longValue();
+			} else if (valueClass == Character.class) {
+				return ((Character)value).charValue();
+			} else if (valueClass == Float.class) {
+				return ((Float)value).floatValue();
+			} else if (valueClass == Double.class) {
+				return ((Double)value).doubleValue();
+			} else if (valueClass == Boolean.class) {
+				return ((Boolean)value).booleanValue();
+			} else {
+				return null;
+			}
+		}
+	}
+	
+	public static Object swapTypeArray(Object array) {
+		if(array == null) return null;
+		if(isPrimitiveArray(array)) {
+			return fromPrimitiveArray(array);
+		} else {
+			return toPrimitiveArray(array);
+		}
+		
+	}
+	
+	public static void main(String[] args) {
+		Integer[][] tab = new Integer[][] {{25, 47},{45, null}, null};
+		Object obj = swapTypeArray(tab);
+		System.out.println(deepToString(tab) + " cl = "+tab.getClass().getCanonicalName());
+		System.out.println(deepToString(obj)  + " cl = "+obj.getClass().getCanonicalName());
+		Object obj1 = swapTypeArray(obj);
+		System.out.println(deepToString(obj1)  + " cl = "+obj1.getClass().getCanonicalName());
 	}
 	
 }
