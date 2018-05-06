@@ -1,10 +1,8 @@
 package com.myskdias.askia.serializer;
 
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
 
 import com.myskdias.askia.utils.ArrayUtils;
 import com.myskdias.askia.utils.E;
@@ -95,10 +93,11 @@ public class Serializer {
 		if(current == null) {
 			return null;
 		}
-		if(!cl.isAssignableFrom(current)) {
-			System.out.println(cl.getCanonicalName() +" is not a superclass or the same class of "+current.getCanonicalName());
+		if(!reflection.isSuper(current, cl)) {
+			System.out.println(cl.getCanonicalName() +" is not a superclass/interface or the same class of "+current.getCanonicalName());
 			return null;
 		}
+		
 		return null;
 	}
 	
@@ -111,9 +110,7 @@ public class Serializer {
 		} catch (ClassNotFoundException e1) {
 			System.out.println("Class not load ! "+className);
 		}
-		
 		E<Class<?>, Integer> e = new E<Class<?>, Integer>(cl, a);
-		
 		return e;
 	}
 	
