@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import com.myskdias.askia.utils.ArrayUtils;
+import com.myskdias.askia.utils.E;
 
 public class Serializer {
 	
@@ -86,15 +87,51 @@ public class Serializer {
 		return stringBuilder;
 	}
 	
+	public <T> T deserialize(byte[] data, Class<T> cl) {
+		if(cl == null) return null;
+		String s = new String(data);
+		E<Class<?>, Integer> e = getObjectClass(s);
+		Class<?> current = e.getK();
+		if(current == null) {
+			return null;
+		}
+		if(!cl.isAssignableFrom(current)) {
+			System.out.println(cl.getCanonicalName() +" is not a superclass or the same class of "+current.getCanonicalName());
+			return null;
+		}
+		return null;
+	}
+	
+	private E<Class<?>, Integer> getObjectClass(String s) {
+		int a = s.indexOf(':');
+		String className = s.substring(1, a);
+		Class<?> cl = null;
+		try {
+			cl = Class.forName(className);
+		} catch (ClassNotFoundException e1) {
+			System.out.println("Class not load ! "+className);
+		}
+		
+		E<Class<?>, Integer> e = new E<Class<?>, Integer>(cl, a);
+		
+		return e;
+	}
+	
+	
+	
+	
 	public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException {
-		Serializer serializer = new Serializer();
-		ArrayList<Object> z = new ArrayList<>();
-		z.add("Salut");
-		z.add(new Vector<>());
-		z.add(45);
-		z.add(new BigDecimal(45));
-		StringBuilder build = serializer.serialize0(z);
-		System.out.println(build.toString());
+		Class<Integer> c = Integer.TYPE;
+		Class<Number> c1 = Number.class;
+//		Serializer serializer = new Serializer();
+//		ArrayList<Object> z = new ArrayList<>();
+//		z.add("Salut");
+//		z.add(new Vector<>());
+//		z.add(45);
+//		z.add(new BigDecimal(45));
+//		StringBuilder build = serializer.serialize0(z);
+//		System.out.println(build.toString());
+//		BigDecimal dec = serializer.deserialize(null, BigDecimal.class);
 //		System.out.println(new Integer(5));
 //		String s = "{java.io.Test:[$i-5,$b:1]}";
 //		byte[] b = s.getBytes();
