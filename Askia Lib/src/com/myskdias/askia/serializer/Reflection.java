@@ -10,7 +10,7 @@ public class Reflection {
 		Field[] allField = c.getDeclaredFields();
 		ArrayList<Field> list = new ArrayList<>();
 		for(Field f : allField) {
-			if(Modifier.isStatic(f.getModifiers())) {
+			if(!Modifier.isStatic(f.getModifiers())) {
 				list.add(f);
 			}
 		}
